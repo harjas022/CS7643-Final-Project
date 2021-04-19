@@ -102,3 +102,8 @@ def resize_image_bb(read_path,write_path,bb,sz):
     new_path = str(write_path/read_path.split("/")[-1])
     cv2.imwrite(new_path, cv2.cvtColor(im_resized, cv2.COLOR_RGB2BGR))
     return new_path, new_bb
+
+def normalize(img):
+    '''normalize images with mean centered at 0'''
+    img= (img - img.mean()) / img.std()
+    return img
