@@ -44,11 +44,10 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
     plt.show()
     
 
-# https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
+    
 def read_image(path):
     return cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB)
 
-# https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
 def create_mask(bb, x):
     """Creates a mask for the bounding box of same shape as image"""
     rows,cols,*_ = x.shape
@@ -57,7 +56,6 @@ def create_mask(bb, x):
     Y[bb[0]:bb[2], bb[1]:bb[3]] = 1.
     return Y
 
-# https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
 def mask_to_bb(Y):
     """Convert mask Y to a bounding box, assumes 0 as background nonzero object"""
     cols, rows = np.nonzero(Y)
@@ -69,12 +67,10 @@ def mask_to_bb(Y):
     right_col = np.min(cols)
     return np.array([left_col, top_row, right_col, bottom_row], dtype=np.float32)
 
-# https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
 def create_bb_array(x):
     """Generates bounding box array from a train_df row"""
     return np.array([x[5],x[4],x[7],x[6]])
 
-# inspired by https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
 def resize_image_bb(read_path,write_path,bb,sz):
     """
     Resize an image and its bounding box and write image to new path
@@ -128,5 +124,4 @@ class WaldoDataset(Dataset):
         path= self.paths[idx]
         y_bb= self.bb[idx]
         x= read_image(path)
-        x= transforms.Normalize()
         return x, y_bb
