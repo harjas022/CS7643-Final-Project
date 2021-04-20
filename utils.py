@@ -128,5 +128,5 @@ class WaldoDataset(Dataset):
         path= self.paths[idx]
         y_bb= self.bb[idx]
         x= read_image(path)
-        x= transforms.Normalize()
+        x= normalize(x)
         return x, y_bb
