@@ -14,11 +14,11 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
     img_num (string): the number labeling of the image
     path (string): path to the annotation dataset
     '''
-    a= pd.read_csv(annotations_path)
-    img= Image.open(images_path+img_num+'.jpg')
-#     img_anno= a[a['filename'] == img_num+'.jpg']
-    img_anno= a[a['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
-    rectangles= []
+    annotations= pd.read_csv(annotations_path)
+    img = Image.open(images_path+img_num+'.jpg')
+#     img_ann = annotations[annotations['filename'] == img_num+'.jpg']
+    img_anno = annotations[annotations['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
+    rectangles = []
     for i in img_anno.index:
         xmin= img_anno.loc[i]['xmin']
         ymin= img_anno.loc[i]['ymin']
