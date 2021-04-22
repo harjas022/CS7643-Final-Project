@@ -6,6 +6,7 @@ import cv2
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
+import torch
 
 
 def print_image(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
@@ -20,12 +21,14 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
     img_anno = annotations[annotations['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
     rectangles = []
     for i in img_anno.index:
+        
         xmin= img_anno.loc[i]['xmin']
         ymin= img_anno.loc[i]['ymin']
         xmax= img_anno.loc[i]['xmax']
         ymax= img_anno.loc[i]['ymax']
-        width= xmax-xmin
-        height= ymax-ymin
+        # print("Xmin: ", xmin)
+        width= xmax - xmin ## Change these to float types
+        height= ymax - ymin ## Changed these to float types
         rectangles.append([xmin, ymin, xmax, ymax, width, height])
         
     
@@ -137,6 +140,7 @@ def resize_image_bb(read_path,write_path,bb,sz):
     new_bb_ymax= int(np.round(bb_ymax * y_scale))
     
     new_bb= [new_bb_xmin, new_bb_ymin, new_bb_xmax, new_bb_ymax]
+    new_bb = np.array(new_bb) ## NEw Code
     
     new_path = str(write_path/read_path.split("/")[-1])
     cv2.imwrite(new_path, cv2.cvtColor(im_resized, cv2.COLOR_RGB2BGR))
