@@ -7,7 +7,12 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 import torch
+import ast
 
+# https://stackoverflow.com/questions/42755214/how-to-keep-numpy-array-when-saving-pandas-dataframe-to-csv is where I got the converter code from
+def from_np_array(array_string):
+    array_string = ','.join(array_string.replace('[ ', '[').split())
+    return np.array(ast.literal_eval(array_string))
 
 def print_image(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
     '''

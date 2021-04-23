@@ -6,7 +6,13 @@ import cv2
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
+import torch
+import ast
 
+# https://stackoverflow.com/questions/42755214/how-to-keep-numpy-array-when-saving-pandas-dataframe-to-csv is where I got the converter code from
+def from_np_array(array_string):
+    array_string = ','.join(array_string.replace('[ ', '[').split())
+    return np.array(ast.literal_eval(array_string))
 
 def print_image(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
     '''
@@ -14,18 +20,20 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
     img_num (string): the number labeling of the image
     path (string): path to the annotation dataset
     '''
-    a= pd.read_csv(annotations_path)
-    img= Image.open(images_path+img_num+'.jpg')
-#     img_anno= a[a['filename'] == img_num+'.jpg']
-    img_anno= a[a['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
-    rectangles= []
+    annotations= pd.read_csv(annotations_path)
+    img = Image.open(images_path+img_num+'.jpg')
+#     img_ann = annotations[annotations['filename'] == img_num+'.jpg']
+    img_anno = annotations[annotations['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
+    rectangles = []
     for i in img_anno.index:
+        
         xmin= img_anno.loc[i]['xmin']
         ymin= img_anno.loc[i]['ymin']
         xmax= img_anno.loc[i]['xmax']
         ymax= img_anno.loc[i]['ymax']
-        width= xmax-xmin
-        height= ymax-ymin
+        # print("Xmin: ", xmin)
+        width= xmax - xmin ## Change these to float types
+        height= ymax - ymin ## Changed these to float types
         rectangles.append([xmin, ymin, xmax, ymax, width, height])
         
     
@@ -42,6 +50,38 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
                                        linewidth=3, 
                                        edgecolor='r', facecolor='none'))
     plt.show()
+
+
+def save_annotated_images(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
+    '''
+    print a waldo image with waldo highlighted
+    img_num (string): the number labeling of the image
+    path (string): path to the annotation dataset
+    '''
+    annotations= pd.read_csv(annotations_path)
+    img = Image.open(images_path+img_num+'.jpg')
+    img_anno = annotations[annotations['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
+    rectangles = []
+    for i in img_anno.index:
+        xmin= img_anno.loc[i]['xmin']
+        ymin= img_anno.loc[i]['ymin']
+        xmax= img_anno.loc[i]['xmax']
+        ymax= img_anno.loc[i]['ymax']
+        width= xmax-xmin
+        height= ymax-ymin
+        rectangles.append([xmin, ymin, xmax, ymax, width, height])
+        
+    
+    # Create figure and axes
+    fig, ax = plt.subplots(figsize= figsize)
+
+    for r in rectangles:
+        ax.add_patch(patches.Rectangle((r[0], r[1]), 
+                                       r[4], 
+                                       r[5], 
+                                       linewidth=3, 
+                                       edgecolor='r', facecolor='none'))
+    plt.savefig('./images_annotated/' + img_num + '.jpg')
     
 
 # https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
@@ -105,6 +145,7 @@ def resize_image_bb(read_path,write_path,bb,sz):
     new_bb_ymax= int(np.round(bb_ymax * y_scale))
     
     new_bb= [new_bb_xmin, new_bb_ymin, new_bb_xmax, new_bb_ymax]
+    new_bb = np.array(new_bb) ## NEw Code
     
     new_path = str(write_path/read_path.split("/")[-1])
     cv2.imwrite(new_path, cv2.cvtColor(im_resized, cv2.COLOR_RGB2BGR))
