@@ -42,38 +42,6 @@ def print_image(img_num, annotations_path="./annotations.csv", images_path="./im
                                        linewidth=3, 
                                        edgecolor='r', facecolor='none'))
     plt.show()
-
-
-def save_annotated_images(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
-    '''
-    print a waldo image with waldo highlighted
-    img_num (string): the number labeling of the image
-    path (string): path to the annotation dataset
-    '''
-    annotations= pd.read_csv(annotations_path)
-    img = Image.open(images_path+img_num+'.jpg')
-    img_anno = annotations[annotations['filename'].str.split('/', expand=True).iloc[:,-1] == img_num + '.jpg']
-    rectangles = []
-    for i in img_anno.index:
-        xmin= img_anno.loc[i]['xmin']
-        ymin= img_anno.loc[i]['ymin']
-        xmax= img_anno.loc[i]['xmax']
-        ymax= img_anno.loc[i]['ymax']
-        width= xmax-xmin
-        height= ymax-ymin
-        rectangles.append([xmin, ymin, xmax, ymax, width, height])
-        
-    
-    # Create figure and axes
-    fig, ax = plt.subplots(figsize= figsize)
-
-    for r in rectangles:
-        ax.add_patch(patches.Rectangle((r[0], r[1]), 
-                                       r[4], 
-                                       r[5], 
-                                       linewidth=3, 
-                                       edgecolor='r', facecolor='none'))
-    plt.savefig('./images_annotated/' + img_num + '.jpg')
     
 
 # https://towardsdatascience.com/bounding-box-prediction-from-scratch-using-pytorch-a8525da51ddc
