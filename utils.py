@@ -14,7 +14,7 @@ def from_np_array(array_string):
     array_string = ','.join(array_string.replace('[ ', '[').split())
     return np.array(ast.literal_eval(array_string))
 
-def print_image(img_num, annotations_path="./annotations.csv", images_path="./images/", figsize=(10,10)):
+def print_image(img_num, annotations_path="./datasets/annotations.csv", images_path="./images/base/", figsize=(10,10)):
     '''
     print a waldo image with waldo highlighted
     img_num (string): the number labeling of the image
