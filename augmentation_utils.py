@@ -84,7 +84,7 @@ def save_rotated_annotations(read_annotations_path='./datasets/annotations_map_r
                     'xmax': xmax[0],
                     'ymax': ymax[0],
                     'new_path': new_filename,
-                    'new_bb': [xmin[0], ymin[0], xmax[0], ymax[0]]
+                    'new_bb': np.array([xmin[0], ymin[0], xmax[0], ymax[0]])
                 })
 
 
@@ -118,7 +118,7 @@ def save_flipped_annotations(read_annotations_path='./datasets/annotations_rotat
                 'xmax': xmax[0],
                 'ymax': ymax, # I have even less of a clue why this one is not a list here....
                 'new_path': new_filename,
-                'new_bb': [xmin[0], ymin[0], xmax[0], ymax]
+                'new_bb': np.array([xmin[0], ymin[0], xmax[0], ymax])
             })
 
 
