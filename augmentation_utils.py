@@ -122,8 +122,7 @@ def save_flipped_annotations(read_annotations_path='./datasets/annotations_rotat
             })
 
 
-
-def save_rotated_images(images_path='./images/resized/*.jpg', save_folder='images/resized_rotated'):
+def save_rotated_images(images_path='./images/resized/*.jpg', save_folder='./images/resized_rotated'):
     '''
     Takes images as input and saves rotated images
     images_path (string): glob path to the images to be flipped. Usually should be resized images, but can handle anything
@@ -134,10 +133,10 @@ def save_rotated_images(images_path='./images/resized/*.jpg', save_folder='image
             img = Image.open(image)
             img = img.rotate(rotation)
             file_name = re.findall('\d+', image)
-            img.save('./' + save_folder + '/' + file_name[0] + '_' + str(rotation) + '.jpg')
+            img.save(save_folder + '/' + file_name[0] + '_' + str(rotation) + '.jpg')
 
 
-def save_flipped_images(images_path='./images/resized_rotated/*.jpg', save_folder='images/resized_flipped'):
+def save_flipped_images(images_path='./images/resized_rotated/*.jpg', save_folder='./images/resized_flipped'):
     '''
     Takes annotated images as input and saves left right flipped images.
     Since we are flipping the rotations as well, we only need a left right flip. The top bottom flip is covered in this.
@@ -148,5 +147,39 @@ def save_flipped_images(images_path='./images/resized_rotated/*.jpg', save_folde
         img = Image.open(image)
         img = img.transpose(Image.FLIP_LEFT_RIGHT)
         file_name = re.findall('[^\/]+\d', image)
-        img.save('./' + save_folder + '/' + file_name[0] + '_flipped.jpg')
-    
+        img.save(save_folder + '/' + file_name[0] + '_flipped.jpg')
+
+
+def concat_annotations(
+    read_annotations_paths = ['./datasets/annotations_rotated.csv', './datasets/annotations_rotated_flipped.csv'],
+    save_annotations_path = './datasets/annotations_final.csv'
+):
+    with open(save_annotations_path, mode='w') as csv_file:
+        fieldnames = ['filename','width','height','class','xmin','ymin','xmax','ymax', 'new_path', 'new_bb']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for read_annotations_path in read_annotations_paths:
+            annotations = pd.read_csv(read_annotations_path)
+
+            for i in range(len(annotations)):
+                writer.writerow({
+                        'filename': annotations.iloc[i,0],
+                        'width': annotations.iloc[i,1],
+                        'height': annotations.iloc[i,2],
+                        'class': annotations.iloc[i,3],
+                        'xmin': annotations.iloc[i,4],
+                        'ymin': annotations.iloc[i,5],
+                        'xmax': annotations.iloc[i,6],
+                        'ymax': annotations.iloc[i,7],
+                        'new_path': annotations.iloc[i,8],
+                        'new_bb': annotations.iloc[i,9]
+                    })
+
+
+def concat_images(images_paths=['./images/rotated/*', './images/rotated_flipped/*'], save_folder='./images/final/'):
+    for images_path in images_paths:
+        for image in glob.iglob(images_path):
+            img = Image.open(image)
+            file_name = re.findall('([^\/]+$)', image)[0]
+            img.save(save_folder + file_name)
