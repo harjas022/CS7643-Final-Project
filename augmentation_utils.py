@@ -49,7 +49,7 @@ def save_annotated_images(img_num, annotations_path="./annotations.csv", images_
     plt.savefig('./images_annotated/' + img_num + '.jpg')
 
 
-def save_rotated_annotations(read_annotations_path='./annotations_map_resized.csv', save_annotations_path='./annotations_rotated.csv'):
+def save_rotated_annotations(read_annotations_path='./datasets/annotations_map_resized.csv', save_annotations_path='./datasets/annotations_rotated.csv'):
     '''
     Takes in the resized annotations csv, calculates the xmin, ymin, xmax, and ymax values after each rotation, and writes this to the save_annotations_path csv.
     read_annotations_path (string): path to the input csv file. Typical use is the resized annotations, but it should work with any annotations file
@@ -58,7 +58,7 @@ def save_rotated_annotations(read_annotations_path='./annotations_map_resized.cs
     annotations = pd.read_csv(read_annotations_path)
 
     with open(save_annotations_path, mode='w') as csv_file:
-        fieldnames = ['filename','width','height','class','xmin','ymin','xmax','ymax']
+        fieldnames = ['filename','width','height','class','xmin','ymin','xmax','ymax', 'new_path', 'new_bb']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -66,22 +66,29 @@ def save_rotated_annotations(read_annotations_path='./annotations_map_resized.cs
             for rotation in ([0, 90, 180, 270]):
                 # not sure why the 360 - rotation is necessary
                 radians = np.deg2rad(360 - rotation)
-                file_name = re.findall('\d+', annotations.iloc[i,0])
+                origin_file_name = re.findall('\d+', annotations.iloc[i,0])
+                new_filename = 'images_rotated/' + origin_file_name[0] + '_' + str(rotation) + '.jpg'
                 origin_x = annotations.iloc[i,1]/2
                 origin_y = annotations.iloc[i,2]/2
+                xmin = round(origin_x + math.cos(radians) * (annotations.iloc[i,4] - origin_x) - math.sin(radians) * (annotations.iloc[i,5] - origin_y)),
+                ymin = round(origin_y + math.sin(radians) * (annotations.iloc[i,4] - origin_x) + math.cos(radians) * (annotations.iloc[i,5] - origin_y)),
+                xmax = round(origin_x + math.cos(radians) * (annotations.iloc[i,6] - origin_x) - math.sin(radians) * (annotations.iloc[i,7] - origin_y)),
+                ymax = round(origin_y + math.sin(radians) * (annotations.iloc[i,6] - origin_x) + math.cos(radians) * (annotations.iloc[i,7] - origin_y)),
                 writer.writerow({
-                    'filename': 'images_resized_rotated/' + file_name[0] + '_' + str(rotation) + '.jpg',
+                    'filename': new_filename,
                     'width': annotations.iloc[i,1],
                     'height': annotations.iloc[i,2],
                     'class': annotations.iloc[i,3],
-                    'xmin': round(origin_x + math.cos(radians) * (annotations.iloc[i,4] - origin_x) - math.sin(radians) * (annotations.iloc[i,5] - origin_y)),
-                    'ymin': round(origin_y + math.sin(radians) * (annotations.iloc[i,4] - origin_x) + math.cos(radians) * (annotations.iloc[i,5] - origin_y)),
-                    'xmax': round(origin_x + math.cos(radians) * (annotations.iloc[i,6] - origin_x) - math.sin(radians) * (annotations.iloc[i,7] - origin_y)),
-                    'ymax': round(origin_y + math.sin(radians) * (annotations.iloc[i,6] - origin_x) + math.cos(radians) * (annotations.iloc[i,7] - origin_y))
+                    'xmin': xmin[0], # no idea why this is a list here but not when it is initialized...
+                    'ymin': ymin[0],
+                    'xmax': xmax[0],
+                    'ymax': ymax[0],
+                    'new_path': new_filename,
+                    'new_bb': [xmin[0], ymin[0], xmax[0], ymax[0]]
                 })
 
 
-def save_flipped_annotations(read_annotations_path='./annotations_rotated.csv', save_annotations_path='./annotations_rotated_flipped.csv'):
+def save_flipped_annotations(read_annotations_path='./datasets/annotations_rotated.csv', save_annotations_path='./datasets/annotations_rotated_flipped.csv'):
     '''
     print a waldo image with waldo highlighted
     img_num (string): the number labeling of the image
@@ -90,21 +97,28 @@ def save_flipped_annotations(read_annotations_path='./annotations_rotated.csv', 
     annotations = pd.read_csv(read_annotations_path)
 
     with open(save_annotations_path, mode='w') as csv_file:
-        fieldnames = ['filename','width','height','class','xmin','ymin','xmax','ymax']
+        fieldnames = ['filename','width','height','class','xmin','ymin','xmax','ymax', 'new_path', 'new_bb']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
         for i in range(len(annotations)):
-            file_name = re.findall('[^\/]+\d', annotations.iloc[i,0])
+            origin_file_name = re.findall('[^\/]+\d', annotations.iloc[i,0])
+            new_filename = 'images_rotated_flipped/' + origin_file_name[0] + '_flipped.jpg'
+            xmin = annotations.iloc[i,1] - annotations.iloc[i,4],
+            ymin = annotations.iloc[i,5],
+            xmax = annotations.iloc[i,1] - annotations.iloc[i,6],
+            ymax = annotations.iloc[i,7]
             writer.writerow({
-                'filename': file_name[0] + '_flipped.jpg',
+                'filename': new_filename,
                 'width': annotations.iloc[i,1],
                 'height': annotations.iloc[i,2],
                 'class': annotations.iloc[i,3],
-                'xmin': annotations.iloc[i,1] - annotations.iloc[i,4],
-                'ymin': annotations.iloc[i,5],
-                'xmax': annotations.iloc[i,1] - annotations.iloc[i,6],
-                'ymax': annotations.iloc[i,7]
+                'xmin': xmin[0], # no idea why this is a list here but not when it is initialized...
+                'ymin': ymin[0],
+                'xmax': xmax[0],
+                'ymax': ymax, # I have even less of a clue why this one is not a list here....
+                'new_path': new_filename,
+                'new_bb': [xmin[0], ymin[0], xmax[0], ymax]
             })
 
 
