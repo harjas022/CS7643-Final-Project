@@ -21,6 +21,8 @@ class CNN(nn.Module):
     ## Defining the forward function
     def forward(self, x):
         
+        print("Input Shape: ", x.size())
+        
         batch_size= x.shape[0]
         channel= x.shape[3]
         h= x.shape[1]

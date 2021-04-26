@@ -1,1 +1,1 @@
-from .SimpleCNN import CNN
+from .SimpleCNN import CNNfrom .YOLO import YOLO
