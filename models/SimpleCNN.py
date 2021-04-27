@@ -27,7 +27,7 @@ class CNN(nn.Module):
         channel= x.shape[3]
         h= x.shape[1]
         w= x.shape[2]
-        x= x.reshape(batch_size, channel, h, w)
+        x= x.permute(0, 3, 1, 2)
         
         output= self.conv1(x)
         output= self.pool(output)

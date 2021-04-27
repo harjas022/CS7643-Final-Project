@@ -26,8 +26,8 @@ class VGG(nn.Module):
         self.conv_2d_5_2 = nn.Conv2d(512, 512, 3, 1)
         self.conv_2d_5_3 = nn.Conv2d(512, 512, 3, 1)
 
-        self.linear_1 = nn.Linear(25088, 4096)
-        self.linear_2 = nn.Linear(4096, 4096)
+        self.linear_1 = nn.Linear(61952, 4)
+        self.linear_2 = nn.Linear(4, 4)
         
         self.relu = nn.ReLU()
 
