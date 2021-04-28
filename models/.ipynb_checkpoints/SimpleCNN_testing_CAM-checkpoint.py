@@ -9,6 +9,9 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
         
+        # testing for activaion maps
+        self.gradients= []
+        
         ## Conv2d(in_channels, out_channels, kernel_size, stride)
         self.conv1= nn.Conv2d(3, 32, 10, stride=2) 
         self.conv2= nn.Conv2d(32, 64, 3, stride=2)
@@ -17,10 +20,13 @@ class CNN(nn.Module):
         self.linear1= nn.Linear(10816,1000)
         self.linear2= nn.Linear(1000, 4)
         
+        #testing for activation maps
+        self.conv2.register_backward_hook(self.save_grads)
+        
     
     ## Defining the forward function
     def forward(self, x):
-                
+        
         batch_size= x.shape[0]
         channel= x.shape[3]
         h= x.shape[1]
@@ -33,9 +39,14 @@ class CNN(nn.Module):
         output= self.conv2(output)
         output= self.pool(output)
         output= self.relu(output)
-                        
+        
+#         print(output.shape)
+                
         output= output.reshape(batch_size, 10816)
         output= self.linear1(output)
         output= self.linear2(output)
         
         return output
+
+    def save_grads(self, module, grad_input, grad_output):
+        self.gradients.append(grad_output)

@@ -28,16 +28,21 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
         model.train()
         sum_loss = 0
         for x, y_bb in train_dl:
-            x= x.float()
+            size_of_batch= x.shape[0]
+            y_bb= torch.tensor(y_bb)
+            if torch.cuda.is_available():
+                x= x.cuda().float()
+                y_bb= y_bb.cuda().float()
+            else:
+                x= x.float()
             out_bb = model(x)
-            y_bb = torch.tensor(y_bb)
             loss= criterion(out_bb, y_bb)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             idx += 1
-            sum_loss += loss.item()
-        train_loss = sum_loss
+            sum_loss += loss.detach().item()
+        train_loss = sum_loss/size_of_batch
         if verbose== True:
             print(" ")
             print("--------------------------------------------------------")
@@ -63,16 +68,21 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
 
 def validate(model, valid_dl, epoch, criterion, verbose= False):
     idx= 0
-    model= model.float()
+    model.eval()
     sum_loss= 0
     for x, y_bb in valid_dl:
-        x= x.float()
-        out_bb= model(x)
+        size_of_batch= x.shape[0]
         y_bb= torch.tensor(y_bb)
+        if torch.cuda.is_available():
+            x= x.cuda().float()
+            y_bb= y_bb.cuda().float()
+        else:
+            x= x.float()
+        out_bb= model(x)
         loss= criterion(out_bb, y_bb)
         idx += 1
-        sum_loss += loss.item()
-    validation_loss= sum_loss
+        sum_loss += loss.detach().item()
+    validation_loss= sum_loss/size_of_batch
     if verbose== True:
         print("Validation Loss for Epoch {0}: {1}".format(epoch, validation_loss))
     return validation_loss

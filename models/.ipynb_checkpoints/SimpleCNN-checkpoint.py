@@ -20,7 +20,7 @@ class CNN(nn.Module):
     
     ## Defining the forward function
     def forward(self, x):
-        
+                
         batch_size= x.shape[0]
         channel= x.shape[3]
         h= x.shape[1]
@@ -33,9 +33,7 @@ class CNN(nn.Module):
         output= self.conv2(output)
         output= self.pool(output)
         output= self.relu(output)
-        
-#         print(output.shape)
-                
+                        
         output= output.reshape(batch_size, 10816)
         output= self.linear1(output)
         output= self.linear2(output)
