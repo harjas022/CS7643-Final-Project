@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 from utils import *
 from models import CNN
 
-def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= False, return_loss= False, verbose=False):
+def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= False, return_loss= False, verbose=False, pretrained_model=False):
     idx = 0
     model= model.float()
     validation_loss_list= []
@@ -33,8 +33,12 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
             if torch.cuda.is_available():
                 x= x.cuda().float()
                 y_bb= y_bb.cuda().float()
-            else:
-                x= x.float()
+            
+            if pretrained_model:
+                batch_size, h, w, channel = x.shape
+                x = x.reshape(batch_size, channel, h, w)
+               
+            x= x.float()
             out_bb = model(x)
             loss= criterion(out_bb, y_bb)
             optimizer.zero_grad()
@@ -47,7 +51,7 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
             print(" ")
             print("--------------------------------------------------------")
             print("Training Loss for Epoch {0}: {1}".format(i,train_loss))
-        valid_loss= validate(model= model, valid_dl= valid_dl, epoch= i, criterion= criterion, verbose= verbose)
+        valid_loss= validate(model= model, valid_dl= valid_dl, epoch= i, criterion= criterion, verbose= verbose, pretrained_model=pretrained_model)
         training_loss_list.append(train_loss)
         validation_loss_list.append(valid_loss)
 
@@ -66,12 +70,18 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
     
 
 
-def validate(model, valid_dl, epoch, criterion, verbose= False):
+def validate(model, valid_dl, epoch, criterion, verbose= False, pretrained_model=False):
     idx= 0
     model.eval()
-    sum_loss= 0
+    sum_loss = 0
+    model = model.float()
     for x, y_bb in valid_dl:
-        size_of_batch= x.shape[0]
+        size_of_batch = x.shape[0]
+        if pretrained_model:
+            batch_size, h, w, channel = x.shape
+            x = x.reshape(batch_size, channel, h, w)
+        x = x.float()
+        out_bb = model(x)
         y_bb= torch.tensor(y_bb)
         if torch.cuda.is_available():
             x= x.cuda().float()
