@@ -3,6 +3,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Ref for GradCAM parts: https://medium.com/@stepanulyanin/implementing-grad-cam-in-pytorch-ea0937c31e82
 class CNN(nn.Module):
     
     ## Initialization of the model
@@ -16,7 +17,8 @@ class CNN(nn.Module):
         self.relu= nn.ReLU()
         self.linear1= nn.Linear(10816,1000)
         self.linear2= nn.Linear(1000, 4)
-        
+
+        self.gradients = None
     
     ## Defining the forward function
     def forward(self, x):
@@ -33,9 +35,20 @@ class CNN(nn.Module):
         output= self.conv2(output)
         output= self.pool(output)
         output= self.relu(output)
-                        
+             
         output= output.reshape(batch_size, 10816)
         output= self.linear1(output)
         output= self.linear2(output)
+
+        output.register_hook(self.activations_hook)
         
         return output
+
+    def activations_hook(self, grad):
+        self.gradients = grad
+
+    def get_activations_gradient(self):
+        return self.gradients
+
+    def get_activations(self, x):
+        return self.conv2(x)
