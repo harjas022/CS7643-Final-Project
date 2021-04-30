@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 from utils import *
 from models import CNN
 
-def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= False, return_loss= False, verbose=False, pretrained_model=False):
+def train(model_type, model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= False, return_loss= False, verbose=False):
     idx = 0
     model= model.float()
     validation_loss_list= []
@@ -34,7 +34,7 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
                 x= x.cuda().float()
                 y_bb= y_bb.cuda().float()
             
-            if pretrained_model:
+            if model_type == 'Inception':
                 batch_size, h, w, channel = x.shape
                 x = x.reshape(batch_size, channel, h, w)
                
@@ -51,7 +51,7 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
             print(" ")
             print("--------------------------------------------------------")
             print("Training Loss for Epoch {0}: {1}".format(i,train_loss))
-        valid_loss= validate(model= model, valid_dl= valid_dl, epoch= i, criterion= criterion, verbose= verbose, pretrained_model=pretrained_model)
+        valid_loss= validate(model= model, valid_dl= valid_dl, epoch= i, criterion= criterion, verbose= verbose, model_type=model_type)
         training_loss_list.append(train_loss)
         validation_loss_list.append(valid_loss)
 
@@ -70,14 +70,14 @@ def train(model, optimizer, train_dl, valid_dl, criterion, epochs=20, plot= Fals
     
 
 
-def validate(model, valid_dl, epoch, criterion, verbose= False, pretrained_model=False):
+def validate(model_type, model, valid_dl, epoch, criterion, verbose= False):
     idx= 0
     model.eval()
     sum_loss = 0
     model = model.float()
     for x, y_bb in valid_dl:
         size_of_batch = x.shape[0]
-        if pretrained_model:
+        if model_type == 'Inception':
             batch_size, h, w, channel = x.shape
             x = x.reshape(batch_size, channel, h, w)
         x = x.float()
@@ -205,3 +205,43 @@ def hp_grid_search(model_type,
         
     if return_all_loss== True:
         return all_loss_train, all_loss_valid
+
+
+# Ref: https://medium.com/@stepanulyanin/implementing-grad-cam-in-pytorch-ea0937c31e82
+def grad_cam(model_type, model, train_dl):
+    if model_type == "SimpleCNN":
+        for x, y_bb in train_dl:
+            x = x.float()
+            for i in range(len(x)):
+                input = x[i]
+                input = torch.unsqueeze(input, dim=0)
+                output = model(input)
+
+                output.sum().backward()
+
+                gradients = model.get_activations_gradient()
+
+                # not sure about this dims
+                pooled_gradients = torch.mean(gradients, dim=1)
+
+                x_perm = x.permute(1,0,2,3)
+                activations = model.get_activations(x_perm).detach()
+
+
+                for k in range(len(pooled_gradients)):
+                    activations[:, k] *= pooled_gradients[k]
+
+                heatmap = torch.mean(activations, dim=1).squeeze()
+
+                heatmap = np.maximum(heatmap, 0)
+
+                heatmap /= torch.max(heatmap)
+
+                img = cv2.imread('./images/resized/' + str(i + 1) + '.jpg')
+                heatmap = cv2.resize(np.float32(heatmap), (img.shape[1], img.shape[0]))
+                heatmap = np.uint8(255 * heatmap)
+                heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+                superimposed_img = heatmap * .8 + img
+                cv2.imwrite('./images/' + model_type + 'ResizedGradCam/' + str(i + 1) + '.jpg', superimposed_img)
+    else:
+        print('GradCAM requires significant setup in the model and currently only works for SimpleCNN')
