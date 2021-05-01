@@ -163,7 +163,7 @@ def hp_grid_search(model_type,
                         
                         optimizer = torch.optim.SGD(model.parameters(), lr, momentum=m, weight_decay=r)
                         
-                        train_loss, valid_loss= train(model= model,optimizer= optimizer,train_dl= train_dl, valid_dl= valid_dl, epochs= epochs, criterion= criterion, return_loss= True,plot= True,verbose= True)
+                        train_loss, valid_loss= train(model_type=model_type, model= model,optimizer= optimizer,train_dl= train_dl, valid_dl= valid_dl, epochs= epochs, criterion= criterion, return_loss= True,plot= True,verbose= True)
                         
                         all_loss_train.append(train_loss)
                         all_loss_valid.append(valid_loss)
