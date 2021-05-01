@@ -11,6 +11,8 @@ class SimpleVGG(nn.Module):
         self.linear_1 = nn.Linear(921600, 32)
         self.linear_2 = nn.Linear(32, 4)
         self.relu = nn.ReLU()
+        
+        self.gradients = None
     def forward(self, x):
         batch_size, h, w, channel = x.shape
         x = x.reshape(batch_size, channel, h, w)
@@ -30,4 +32,16 @@ class SimpleVGG(nn.Module):
         x = self.linear_1(x)
         x = self.relu(x)
         x = self.linear_2(x)
+        
+        x.register_hook(self.activations_hook)
         return x
+    
+    def activations_hook(self, grad):
+        self.gradients = grad
+
+    def get_activations_gradient(self):
+        return self.gradients
+
+    def get_activations(self, x):
+        print("X Size: ", x.size())
+        return self.conv_2d_3(x)

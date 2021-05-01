@@ -50,5 +50,5 @@ class CNN(nn.Module):
     def get_activations_gradient(self):
         return self.gradients
 
-    def get_activations(self, x):
-        return self.conv2(x)
+    def get_activations(self, output):
+        return self.conv2(output)

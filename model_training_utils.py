@@ -209,7 +209,7 @@ def hp_grid_search(model_type,
 
 # Ref: https://medium.com/@stepanulyanin/implementing-grad-cam-in-pytorch-ea0937c31e82
 def grad_cam(model_type, model, train_dl):
-    if model_type == "SimpleCNN":
+    if model_type == "SimpleCNN" or model_type == "SimpleVGG":
         for x, y_bb in train_dl:
             x = x.float()
             for i in range(len(x)):
@@ -220,6 +220,7 @@ def grad_cam(model_type, model, train_dl):
                 output.sum().backward()
 
                 gradients = model.get_activations_gradient()
+                print("Gradients: ", gradients)
 
                 # not sure about this dims
                 pooled_gradients = torch.mean(gradients, dim=1)
