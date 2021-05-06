@@ -33,12 +33,14 @@ def train(model_type, model, optimizer, train_dl, valid_dl, criterion, epochs=20
             if torch.cuda.is_available():
                 x= x.cuda().float()
                 y_bb= y_bb.cuda().float()
+            else:
+                x= x.float()
             
             if model_type == 'Inception':
                 batch_size, h, w, channel = x.shape
                 x = x.reshape(batch_size, channel, h, w)
                
-            x= x.float()
+#             x= x.float()
             out_bb = model(x)
             loss= criterion(out_bb, y_bb)
             optimizer.zero_grad()
@@ -80,8 +82,8 @@ def validate(model_type, model, valid_dl, epoch, criterion, verbose= False):
         if model_type == 'Inception':
             batch_size, h, w, channel = x.shape
             x = x.reshape(batch_size, channel, h, w)
-        x = x.float()
-        out_bb = model(x)
+#         x = x.float()
+#         out_bb = model(x)
         y_bb= torch.tensor(y_bb)
         if torch.cuda.is_available():
             x= x.cuda().float()
